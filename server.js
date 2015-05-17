@@ -8,6 +8,7 @@ var server = http.createServer(function(req, res) {
   var index = "./sse.htm";
   var fileName;
   var interval;
+  var searchTerm = "and";
 
   if (req.url === "/")
     fileName = index;
@@ -34,6 +35,7 @@ var server = http.createServer(function(req, res) {
 
     var github_secret = '';
     var outerRes = res;
+    var waitTime = 3000;
 
     console.log('Loading secret');
 
@@ -44,8 +46,6 @@ var server = http.createServer(function(req, res) {
       github_secret = data;
       github_secret = github_secret.trim();
 
-      console.log(github_secret);
-
       github.authenticate({
         type: "oauth",
         token: github_secret
@@ -53,11 +53,12 @@ var server = http.createServer(function(req, res) {
 
       interval = setInterval(function() {
         var githubData = github.search.repos({
-          q: "node.js"
+          q: searchTerm,
+          sort: "updated"
         }, function(err, res) {
           outerRes.write("data: " + JSON.stringify(res) + "\n\n");
         });
-      }, 10000);
+      }, waitTime);
       req.connection.addListener("close", function () {
         clearInterval(interval);
       }, false);
