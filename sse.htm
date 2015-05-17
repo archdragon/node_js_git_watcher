@@ -4,8 +4,79 @@
   <title>Node.js tracking Github changes</title>
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <style>
+    .appear-animation {
+      animation-name: appear;
+      animation-duration: 1s;
+      -webkit-animation-name: appear;
+      -webkit-animation-duration: 1s;
+    }
+    @keyframes appear {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    @-webkit-keyframes appear {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>GitHub - Obserwacja Zmian</h1>
+        <p>Podgląd repozytoriów związanych z node.js</p>
+      </div>
+    </div>
+
+    <div class="row appear-animation" id="info-panels">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">Ostatnie Repozytorium</div>
+          <div class="panel-body">
+            <h4 id="repo-name"></h4>
+            <p>
+              <a href="" id="repo-addr"></a>
+            <p>
+            <p id="repo-desc"></p>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">Wszystkich wyników</div>
+          <div class="panel-body">
+            <p id="total-count"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Kontrola połączenia</h3>
+        <input type="button" id="connect" value="Połącz" class="btn btn-primary" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Debug</h3>
+        <span id="status">Połączenie zamknięte!</span><br />
+        <span id="connecttime"></span><br />
+        <span id="output"></span>
+      </div>
+    </div>
+  </div>
   <script>
-    window.addEventListener("load", function() {
+      var lastRepoName = '';
       var button = document.getElementById("connect");
       var status = document.getElementById("status");
       var output = document.getElementById("output");
@@ -14,6 +85,7 @@
       var repoDesc = document.getElementById("repo-desc");
       var repoAddr = document.getElementById("repo-addr");
       var connectTime = document.getElementById("connecttime");
+      var panels = document.getElementById("info-panels");
       var source;
 
       function connect() {
@@ -26,6 +98,16 @@
 
           var repo = data.items[0];
           repoName.textContent = repo.name;
+          repoAddr.textContent = repo.url;
+          repoAddr.href = repo.url;
+          repoDesc.textContent = repo.description;
+
+          if(lastRepoName != repo.name) {
+            panels.classList.remove("appear-animation");
+            panels.offsetWidth = panels.offsetWidth;
+            panels.classList.add("appear-animation");
+            lastRepoName = repo.name;
+          }
         }, false);
 
         source.addEventListener("connecttime", function(event) {
@@ -61,49 +143,6 @@
         button.style.display = "none";
         status.textContent = "Przeglądarka nie obsługuje zdarzeń wysyłanych przez serwer";
       }
-    }, false);
   </script>
-</head>
-<body>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h1>GitHub - Obserwacja Zmian</h1>
-        <p>Podgląd repozytoriów związanych z node.js</p>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">Repozytoria</div>
-          <div class="panel-body">
-            <h4>Znalezionych wyników</h4>
-            <p id="total-count"></p>
-            <h4>Ostatnie repozytorium</h4>
-            <p id="repo-name"></p>
-            <p id="repo-addr"></p>
-            <p id="repo-desc"></p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-12">
-        <h3>Kontrola połączenia</h3>
-        <input type="button" id="connect" value="Połącz" class="btn btn-primary" />
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-12">
-        <h3>Debug</h3>
-        <span id="status">Połączenie zamknięte!</span><br />
-        <span id="connecttime"></span><br />
-        <span id="output"></span>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
