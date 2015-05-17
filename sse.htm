@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Node.js tracking Github changes</title>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <script>
+    window.addEventListener("load", function() {
+      var button = document.getElementById("connect");
+      var status = document.getElementById("status");
+      var output = document.getElementById("output");
+      var totalCount = document.getElementById("total-count");
+      var repoName = document.getElementById("repo-name");
+      var repoDesc = document.getElementById("repo-desc");
+      var repoAddr = document.getElementById("repo-addr");
+      var connectTime = document.getElementById("connecttime");
+      var source;
+
+      function connect() {
+        console.log('connecting');
+        source = new EventSource("stream");
+        source.addEventListener("message", function(event) {
+          data = JSON.parse(event.data);
+          console.log(data);
+          totalCount.textContent = data.total_count;
+
+          var repo = data.items[0];
+          repoName.textContent = repo.name;
+        }, false);
+
+        source.addEventListener("connecttime", function(event) {
+          //connectTime.textContent = "Połączono o: " + event.data;
+        }, false);
+
+        source.addEventListener("open", function(event) {
+          button.value = "Rozłącz";
+          button.onclick = function(event) {
+            source.close();
+            button.value = "Połącz";
+            button.onclick = connect;
+            status.textContent = "Połączenie zamknięte!";
+          };
+          status.textContent = "Połączenie otwarte!";
+        }, false);
+
+        source.addEventListener("error", function(event) {
+          if (event.target.readyState === EventSource.CLOSED) {
+            source.close();
+            status.textContent = "Połączenie zamknięte!";
+          } else if (event.target.readyState === EventSource.CONNECTING) {
+            status.textContent = "Połączenie zamknięte. Próbuję połączyć ponownie!";
+          } else {
+            status.textContent = "Połączenie zamknięte. Nieznany błąd!";
+          }
+        }, false);
+      }
+
+      if (!!window.EventSource) {
+        connect();
+      } else {
+        button.style.display = "none";
+        status.textContent = "Przeglądarka nie obsługuje zdarzeń wysyłanych przez serwer";
+      }
+    }, false);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>GitHub - Obserwacja Zmian</h1>
+        <p>Podgląd repozytoriów związanych z node.js</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">Repozytoria</div>
+          <div class="panel-body">
+            <h4>Znalezionych wyników</h4>
+            <p id="total-count"></p>
+            <h4>Ostatnie repozytorium</h4>
+            <p id="repo-name"></p>
+            <p id="repo-addr"></p>
+            <p id="repo-desc"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Kontrola połączenia</h3>
+        <input type="button" id="connect" value="Połącz" class="btn btn-primary" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Debug</h3>
+        <span id="status">Połączenie zamknięte!</span><br />
+        <span id="connecttime"></span><br />
+        <span id="output"></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
